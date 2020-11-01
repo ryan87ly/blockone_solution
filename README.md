@@ -37,7 +37,7 @@ After application is started, please visit http://localhost:8080/swagger-ui.html
 Price unit is cent to avoid floating point accuracy issue.  
 ### Product
 #### Model
-```json
+```jsonc
 {
     "id": "Product-1",
     "description": "Awesome product1",
@@ -49,7 +49,7 @@ Price unit is cent to avoid floating point accuracy issue.
 #### Model
 The application is supporting two discount types now
 ##### PRICE_PERCENTAGE_REDUCTION
-```json
+```jsonc
 {
   "description": "50% off for second purchase",
   "id": "Discount-1",
@@ -60,9 +60,9 @@ The application is supporting two discount types now
 }
 ```
 ##### BUNDLE_PRODUCTS
-```json
+```jsonc
 {
-    description": "Buy Product-1, get a Product-2 for free",
+    "description": "Buy Product-1, get a Product-2 for free",
     "id": "Discount-2",
     "type": "BUNDLE_PRODUCTS", // Type value is fixed("BUNDLE_PRODUCTS")
     "freeProducts": [ //  Free products
