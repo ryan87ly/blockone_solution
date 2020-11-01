@@ -6,6 +6,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * JVM memory ProductRepository implementation
+ */
 public class ProductRepositoryMemoryImpl implements ProductRepository {
     private final ConcurrentMap<String, Product> productMap;
 

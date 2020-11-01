@@ -7,6 +7,9 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * JVM memory ShoppingCartRepository implementation
+ */
 public class ShoppingCartRepositoryMemoryImpl implements ShoppingCartRepository {
     private ConcurrentMap<String, ShoppingCartItem> itemMap;
 

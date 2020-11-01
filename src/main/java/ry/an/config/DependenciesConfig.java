@@ -53,6 +53,7 @@ public class DependenciesConfig {
 
     @Bean
     public Clock getClock() {
+        // HKT
         return Clock.system(ZoneOffset.ofHours(8));
     }
 

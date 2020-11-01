@@ -1,19 +1,16 @@
 package ry.an.core.pricing;
 
-import ry.an.model.product.Product;
 import ry.an.model.discount.PricePercentageDiscount;
 import ry.an.model.order.CheckoutItem;
 import ry.an.model.order.CheckoutItemResult;
-import ry.an.model.order.CheckoutItems;
 import ry.an.model.order.CheckoutResult;
 import ry.an.model.price.Price;
+import ry.an.model.product.Product;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class PricePercentageDiscountStrategy implements PricingStrategy {
+public class PricePercentageDiscountStrategy extends PricingStrategy {
     private final PricePercentageDiscount discountDefinition;
 
     private PricePercentageDiscountStrategy(PricePercentageDiscount discountDefinition) {
@@ -25,11 +22,11 @@ public class PricePercentageDiscountStrategy implements PricingStrategy {
     }
 
     @Override
-    public CheckoutResult calculate(CheckoutResult checkoutResult) {
+    protected PricingStrategyProcessResult doCalculate(CheckoutResult checkoutResult) {
         String discountedProductId = discountDefinition.getProductId();
         CheckoutItem checkoutItem = checkoutResult.getRemainingItems().getItemByProductId(discountedProductId);
         if (Objects.isNull(checkoutItem) || checkoutItem.getQuantity() < discountDefinition.getDiscountOnPurchase()) {
-            return checkoutResult;
+            return PricingStrategyProcessResult.EMPTY;
         }
         Product checkoutProduct = checkoutItem.getProduct();
         int purchaseQuantity = checkoutItem.getQuantity();
@@ -38,13 +35,9 @@ public class PricePercentageDiscountStrategy implements PricingStrategy {
         Price discountedPrice = originalPrice.subtract(originalPrice.multiply(discountDefinition.getDiscountRate()));
         CheckoutItemResult itemResult = CheckoutItemResult.of(checkoutProduct, discountedQuantity, originalPrice, discountedPrice,true);
 
-        List<CheckoutItemResult> updatedProceededItems = new ArrayList<>(checkoutResult.getProcessedItems());
-        updatedProceededItems.add(itemResult);
-
         int remainingQuantity = purchaseQuantity - discountedQuantity;
         CheckoutItem remainingCheckoutItem = CheckoutItem.of(checkoutProduct, remainingQuantity);
-        CheckoutItems remainingCheckoutItems = checkoutResult.getRemainingItems().updateItem(remainingCheckoutItem);
 
-        return CheckoutResult.of(updatedProceededItems, remainingCheckoutItems);
+        return PricingStrategyProcessResult.of(List.of(itemResult), List.of(remainingCheckoutItem));
     }
 }

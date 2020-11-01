@@ -1,5 +1,7 @@
 package ry.an.controller;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/product")
+@Api(tags = "Product APIs")
 public class ProductController {
 
     @Autowired
@@ -22,6 +25,7 @@ public class ProductController {
 
     @GetMapping
     @ResponseBody
+    @ApiOperation(value = "Get all available products")
     public List<ProductDTO> getProducts() {
         return productService.allActiveProducts()
                 .stream()
@@ -32,6 +36,7 @@ public class ProductController {
     @PostMapping
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation(value = "Create a product")
     public ProductDTO createProduct(@RequestBody ProductDTO productDTO) {
         InputValidations.requireNotNullOrEmpty(productDTO.getDescription(), () -> "description is mandatory");
         InputValidations.require(productDTO.getPrice() > 0, () -> "price should be positive");
@@ -45,6 +50,7 @@ public class ProductController {
 
     @GetMapping(value = "/{id}")
     @ResponseBody
+    @ApiOperation(value = "Query product by id")
     public ProductDTO getProduct(@PathVariable("id") String id) {
         Optional<Product> productOpt = productService.findActiveProductById(id);
         if (productOpt.isEmpty()) {
@@ -55,6 +61,7 @@ public class ProductController {
 
     @PutMapping(value = "/{id}")
     @ResponseBody
+    @ApiOperation(value = "Update product")
     public ProductDTO updateProduct(@PathVariable("id") String id, @RequestBody ProductDTO productDTO) {
         InputValidations.requireNotNullOrEmpty(productDTO.getDescription(), () -> "description is mandatory");
         InputValidations.require(productDTO.getPrice() > 0, () -> "price should be positive");
@@ -68,6 +75,7 @@ public class ProductController {
     }
 
     @DeleteMapping(value = "/{id}")
+    @ApiOperation(value = "Delete a product")
     public void deleteProduct(@PathVariable("id") String id) {
         Optional<Product> productOpt = productService.findActiveProductById(id);
         if (productOpt.isEmpty()) {

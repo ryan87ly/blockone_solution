@@ -1,6 +1,8 @@
 package ry.an.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/shoppingcart")
+@Api(tags = "Shopping Cart APIs")
 public class ShoppingCartController {
 
     @Autowired
@@ -37,6 +40,7 @@ public class ShoppingCartController {
 
     @GetMapping
     @ResponseBody
+    @ApiOperation(value = "Get existing shopping cart items")
     public ShoppingCartDTO getShoppingCart() {
         ShoppingCart shoppingCart = shoppingCartService.getCurrentShoppingCart();
         return shoppingCartToDTO(shoppingCart);
@@ -44,6 +48,7 @@ public class ShoppingCartController {
 
     @PostMapping("/additem")
     @ResponseBody
+    @ApiOperation(value = "Add item to shopping cart")
     public ShoppingCartDTO addItem(@RequestBody ShoppingCartItemDTO itemDTO) {
         InputValidations.requirePresent(productService.findActiveProductById(itemDTO.getProductId()), () -> "Product not found, id=" + itemDTO.getProductId());
 
@@ -54,6 +59,7 @@ public class ShoppingCartController {
 
     @PostMapping("/amenditem")
     @ResponseBody
+    @ApiOperation(value = "Update item quantity")
     public ShoppingCartDTO amendItem(@RequestBody ShoppingCartItemDTO itemDTO) {
         InputValidations.requirePresent(productService.findActiveProductById(itemDTO.getProductId()), () -> "Product not found, id=" + itemDTO.getProductId());
         InputValidations.requirePresent(shoppingCartService.getItemByProductId(itemDTO.getProductId()), () -> "Product not found in shopping cart, id=" + itemDTO.getProductId());
@@ -65,6 +71,7 @@ public class ShoppingCartController {
 
     @PostMapping("/removeitem")
     @ResponseBody
+    @ApiOperation(value = "Remove an item from shopping cart")
     public ShoppingCartDTO removeItem(@RequestBody JsonNode requestBody) {
         JsonNode productIdObj = requestBody.get("productId");
         InputValidations.require(Objects.nonNull(productIdObj) && productIdObj.isTextual(), () -> "'productId' is mandatory");
@@ -78,6 +85,7 @@ public class ShoppingCartController {
 
     @PostMapping("/checkout")
     @ResponseBody
+    @ApiOperation(value = "Checkout current shopping cart")
     public OrderDTO checkout() {
         ShoppingCart shoppingCart = shoppingCartService.getCurrentShoppingCart();
         InputValidations.require(!shoppingCart.isEmpty(), () -> "Shopping Cart is empty, nothing to checkout");

@@ -1,7 +1,6 @@
 package ry.an.service.discount;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import ry.an.model.discount.DiscountEntity;
 import ry.an.repository.discount.DiscountRepository;

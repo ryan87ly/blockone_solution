@@ -59,11 +59,14 @@ public class OrderServiceImpl implements OrderService {
             .flatMap(checkoutItem -> discountService.findActiveDiscountsForProduct(checkoutItem.getProduct().getId()).stream())
             .collect(Collectors.toList());
 
+        // Build pricing strategy list
         List<PricingStrategy> pricingStrategies = new LinkedList<>();
         for (DiscountEntity discountEntity : discountEntities) {
             PricingStrategy discountStrategy = discountStrategyFactory.createStrategy(discountEntity);
             pricingStrategies.add(discountStrategy);
         }
+
+        // Fallback strategy
         pricingStrategies.add(defaultPricingStrategy);
 
         CheckoutResult checkoutResult = CheckoutResult.of(Collections.emptyList(), CheckoutItems.of(checkoutItems));

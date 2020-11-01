@@ -4,7 +4,6 @@ import ry.an.exception.ProductNotFoundException;
 import ry.an.model.discount.BundleProductsDiscount;
 import ry.an.model.order.CheckoutItem;
 import ry.an.model.order.CheckoutItemResult;
-import ry.an.model.order.CheckoutItems;
 import ry.an.model.order.CheckoutResult;
 import ry.an.model.price.Price;
 import ry.an.model.product.Product;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class BundleProductsDiscountStrategy implements PricingStrategy {
+public class BundleProductsDiscountStrategy extends PricingStrategy {
     private final BundleProductsDiscount discountDefinition;
     private final ProductService productService;
 
@@ -29,13 +28,15 @@ public class BundleProductsDiscountStrategy implements PricingStrategy {
     }
 
     @Override
-    public CheckoutResult calculate(CheckoutResult checkoutResult) {
+    protected PricingStrategyProcessResult doCalculate(CheckoutResult checkoutResult) {
         String discountedProductId = discountDefinition.getProductId();
+
+        // If the remaining items don't contain discounted product, skip
         CheckoutItem checkoutItem = checkoutResult.getRemainingItems().getItemByProductId(discountedProductId);
         if (Objects.isNull(checkoutItem)) {
-            return checkoutResult;
+            return PricingStrategyProcessResult.EMPTY;
         }
-        List<CheckoutItemResult> updatedProceededItems = new ArrayList<>(checkoutResult.getProcessedItems());
+        List<CheckoutItemResult> proceededItems = new ArrayList<>();
         List<Product> freeProducts = discountDefinition.getFreeProductIds()
             .stream()
             .map(productId -> productService.
@@ -47,15 +48,14 @@ public class BundleProductsDiscountStrategy implements PricingStrategy {
         Product checkoutProduct = checkoutItem.getProduct();
         Price itemPrice = checkoutProduct.getPrice().multiply(checkoutItem.getQuantity());
         CheckoutItemResult itemResult = CheckoutItemResult.of(checkoutProduct, checkoutItem.getQuantity(), itemPrice, itemPrice, false);
-        updatedProceededItems.add(itemResult);
+        proceededItems.add(itemResult);
 
         for (Product freeProduct : freeProducts) {
             Price originalPrice = freeProduct.getPrice().multiply(checkoutItem.getQuantity());
             CheckoutItemResult freeItemResult = CheckoutItemResult.of(freeProduct, checkoutItem.getQuantity(), originalPrice, Price.ZERO, true);
-            updatedProceededItems.add(freeItemResult);
+            proceededItems.add(freeItemResult);
         }
         CheckoutItem remainingCheckoutItem = CheckoutItem.of(checkoutProduct, 0);
-        CheckoutItems remainingCheckoutItems = checkoutResult.getRemainingItems().updateItem(remainingCheckoutItem);
-        return CheckoutResult.of(updatedProceededItems, remainingCheckoutItems);
+        return PricingStrategyProcessResult.of(proceededItems, List.of(remainingCheckoutItem));
     }
 }

@@ -1,6 +1,6 @@
 package ry.an.controller;
 
-import com.google.common.base.Strings;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +16,12 @@ import ry.an.service.discount.DiscountService;
 import ry.an.service.product.ProductService;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/discount")
+@Api(tags = "Discount APIs")
 public class DiscountController {
 
     @Autowired
@@ -30,26 +30,31 @@ public class DiscountController {
     @Autowired
     private DiscountService discountService;
 
-    @GetMapping
-    @ResponseBody
-    public List<DiscountDTOBase> getDiscounts() {
-        return discountService.allActiveDiscounts()
-                .stream()
-                .map(this::discountToDTO)
-                .collect(Collectors.toList());
-    }
-
     @PostMapping
     @ResponseBody
     @ResponseStatus(HttpStatus.CREATED)
-    public DiscountDTOBase createDiscount(@RequestBody DiscountDTOBase baseDiscountDTO) {
-        DiscountEntity discountRequestEntity = validateAndConvertDTOToDiscount(baseDiscountDTO);
+    @ApiImplicitParams(
+        {
+            @ApiImplicitParam(
+                    name = "discount",
+                    dataType = "PricePercentageDiscountDTO"
+            ),
+            @ApiImplicitParam(
+                    name = "discount",
+                    dataType = "BundleProductsDiscountDTO"
+            )
+        }
+    )
+    @ApiOperation(value = "Create a discount")
+    public DiscountDTOBase createDiscount(@RequestBody DiscountDTOBase discount) {
+        DiscountEntity discountRequestEntity = validateAndConvertDTOToDiscount(discount);
         DiscountEntity updatedDiscount = discountService.createDiscount(discountRequestEntity);
         return discountToDTO(updatedDiscount);
     }
 
     @GetMapping(value = "/{id}")
     @ResponseBody
+    @ApiOperation(value = "Query discount by id")
     public DiscountDTOBase getDiscount(@PathVariable("id") String id) {
         Optional<DiscountEntity> discountOpt = discountService.findActiveDiscountById(id);
         if (discountOpt.isEmpty()) {
@@ -60,6 +65,7 @@ public class DiscountController {
 
     @PutMapping(value = "/{id}")
     @ResponseBody
+    @ApiOperation(value = "Update a discount")
     public DiscountDTOBase updateDiscount(@PathVariable("id") String id, @RequestBody DiscountDTOBase baseDiscountDTO) {
         Optional<DiscountEntity> discountOpt = discountService.findActiveDiscountById(id);
         if (discountOpt.isEmpty()) {
@@ -70,6 +76,7 @@ public class DiscountController {
     }
 
     @DeleteMapping(value = "/{id}")
+    @ApiOperation(value = "Delete a discount")
     public void deleteDiscount(@PathVariable("id") String id) {
         Optional<DiscountEntity> discountOpt = discountService.findActiveDiscountById(id);
         if (discountOpt.isEmpty()) {
@@ -77,6 +84,17 @@ public class DiscountController {
         }
         discountService.deactivateDiscount(id);
     }
+
+    @GetMapping
+    @ResponseBody
+    @ApiOperation(value = "Get all available discounts")
+    public List<DiscountDTOBase> getDiscounts() {
+        return discountService.allActiveDiscounts()
+                .stream()
+                .map(this::discountToDTO)
+                .collect(Collectors.toList());
+    }
+
 
     private DiscountEntity validateAndConvertDTOToDiscount(DiscountDTOBase baseDiscountDTO) {
         InputValidations.requireNotNullOrEmpty(baseDiscountDTO.getDescription(), () -> "description is mandatory");

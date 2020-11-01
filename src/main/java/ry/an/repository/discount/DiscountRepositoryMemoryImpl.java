@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+/**
+ * JVM memory DiscountRepository implementation
+ */
 public class DiscountRepositoryMemoryImpl implements DiscountRepository {
     private final ConcurrentMap<String, DiscountEntity> discountMap;
 
